@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register - Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+      <h2 class="text-2xl font-bold text-blue-600">Register</h2>
+
+      <form id="registerForm" class="mt-6">
+        <input
+          type="text"
+          id="newUsername"
+          class="border p-2 rounded w-full"
+          placeholder="Buat Username"
+          required
+        />
+        <input
+          type="password"
+          id="newPassword"
+          class="border p-2 rounded w-full mt-4"
+          placeholder="Buat Password"
+          required
+        />
+        <button
+          type="submit"
+          class="mt-4 px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-#009DDB w-full"
+        >
+          Daftar
+        </button>
+      </form>
+
+      <p class="mt-4 text-gray-600">
+        Sudah punya akun?
+        <a href="login.html" class="text-blue-500 hover:underline"
+          >Login di sini</a
+        >
+      </p>
+
+      <p id="registerMessage" class="text-red-500 mt-4 hidden"></p>
+    </div>
+
+    <script>
+      document
+        .getElementById("registerForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const newUsername = document.getElementById("newUsername").value;
+          const newPassword = document.getElementById("newPassword").value;
+          let users = JSON.parse(localStorage.getItem("users")) || [];
+
+          // Cek apakah username sudah digunakan
+          if (users.some((user) => user.username === newUsername)) {
+            document.getElementById("registerMessage").textContent =
+              "Username sudah terdaftar!";
+            document
+              .getElementById("registerMessage")
+              .classList.remove("hidden");
+            return;
+          }
+
+          // Simpan user baru ke localStorage
+          users.push({ username: newUsername, password: newPassword });
+          localStorage.setItem("users", JSON.stringify(users));
+
+          alert("Pendaftaran berhasil! Silakan login.");
+          window.location.href = "login.html"; // Redirect ke halaman login
+        });
+    </script>
+  </body>
+</html>

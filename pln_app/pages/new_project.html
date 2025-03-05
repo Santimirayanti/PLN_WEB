@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Project - PLN Web App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div class="bg-white p-6 rounded-lg shadow-md w-96">
+      <h2 class="text-2xl font-bold mb-4 text-center">New Project</h2>
+      <form id="projectForm">
+        <div class="mb-4">
+          <label class="block text-gray-700">Nama Pekerjaan</label>
+          <input
+            type="text"
+            id="projectName"
+            class="w-full p-2 border rounded"
+            required
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Tanggal</label>
+          <input
+            type="date"
+            id="projectDate"
+            class="w-full p-2 border rounded"
+            required
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Status</label>
+          <select id="projectStatus" class="w-full p-2 border rounded">
+            <option value="Belum Dimulai">Belum Dimulai</option>
+            <option value="Dalam Progress">Dalam Progress</option>
+            <option value="Selesai">Selesai</option>
+          </select>
+        </div>
+        <button
+          type="submit"
+          class="w-full bg-[#009DDB] text-white py-2 rounded mb-2"
+        >
+          Tambah Pekerjaan
+        </button>
+        <button
+          type="button"
+          onclick="goBack()"
+          class="w-full bg-gray-500 text-white py-2 rounded"
+        >
+          Kembali
+        </button>
+      </form>
+    </div>
+
+    <script>
+      document
+        .getElementById("projectForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const projectName = document.getElementById("projectName").value;
+          const projectDate = document.getElementById("projectDate").value;
+          const projectStatus = document.getElementById("projectStatus").value;
+
+          let projects = JSON.parse(localStorage.getItem("projects")) || [];
+
+          projects.push({
+            name: projectName,
+            date: projectDate,
+            status: projectStatus,
+          });
+          localStorage.setItem("projects", JSON.stringify(projects));
+
+          alert("Pekerjaan berhasil ditambahkan!");
+          window.location.href = "tracker.html"; // Redirect ke Tracker
+        });
+
+      function goBack() {
+        window.history.back();
+      }
+    </script>
+  </body>
+</html>
