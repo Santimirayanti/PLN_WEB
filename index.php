@@ -8,7 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body class="bg-gray-100">
-    <script>
+    <!-- Ini nda perlu pake -->
+    <!-- <script>
       // Cek apakah pengguna sudah login
       if (!localStorage.getItem("isLoggedIn")) {
         window.location.href = "auth/login.html"; // Redirect ke login jika belum login
@@ -19,7 +20,7 @@
         localStorage.removeItem("isLoggedIn"); // Hapus status login
         window.location.href = "auth/login.html"; // Redirect ke login
       }
-    </script>
+    </script> -->
 
     <div class="flex h-screen">
       <!-- Sidebar -->
@@ -27,7 +28,7 @@
         class="w-64 bg-[#ffffff] text-white p-5 flex flex-col items-center"
       >
         <img
-          src="C:\Users\harmo\Documents\pln_app\assets\img\logo_pln.png"
+          src="assets\img\logo_pln.png"
           alt="PLN Logo"
           class="w-24 mb-4"
         />

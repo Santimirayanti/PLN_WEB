@@ -1,19 +1,20 @@
 <?php
+session_start();
 // session_start();
 require '../config/database.php'; // Pastikan koneksi ke database benar
 
 $messages = "";
 
 // Jika sudah login, langsung arahkan ke dashboard
-// if (isset($_SESSION['role'])) {
-//     if ($_SESSION['role'] == 'admin') {
-//         header("Location: admin/dashboard.php");
-//         exit();
-//     } else {
-//         header("Location: user/dashboard.php");
-//         exit();
-//     }
-// }
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] == 'admin') {
+        header("Location: admin/dashboard.php");
+        exit();
+    } else {
+        header("Location: user/dashboard.php");
+        exit();
+    }
+}
 
 // Fungsi untuk autentikasi user
 function authenticate_user($conn, $username, $password)
@@ -43,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
         $user = authenticate_user($conn, $username, $password);
 
         if ($user) {
-            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['email'] = $user['email'];
@@ -53,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
                 header("Location: admin/dashboard.php");
                 exit();
             } else {
-                header("Location: user/dashboard.php");
+                header("Location: ../pages/home.php");
                 exit();
             }
         } else {
