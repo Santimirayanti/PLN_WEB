@@ -9,7 +9,7 @@
   <body class="bg-gray-100 flex justify-center items-center h-screen">
     <div class="bg-white p-8 rounded-lg shadow-lg text-center w-96">
       <img
-        src="C:\Users\Asus\Downloads\pln_app (4)\pln_app\assets\img\logo_pln.png"
+        src="..\assets\img\logo_pln.png"
         alt="Logo PLN"
         class="mx-auto w-24 mb-4"
       />
@@ -112,7 +112,7 @@
             localStorage.setItem("isLoggedIn", "true");
             localStorage.setItem("currentUser", username);
 
-            window.location.href = "../pages/home.html"; // Redirect ke halaman utama
+            window.location.href = "../pages/user/home.html"; // Redirect ke halaman utama
           } else {
             document.getElementById("loginError").classList.remove("hidden");
           }
