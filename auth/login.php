@@ -11,7 +11,7 @@ if (isset($_SESSION['role'])) {
         header("Location: admin/dashboard.php");
         exit();
     } else {
-        header("Location: user/dashboard.php");
+        header("Location: ../pages/user/home.php");
         exit();
     }
 }
@@ -51,10 +51,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
 
             // Arahkan berdasarkan role
             if ($user['role'] == 'admin') {
-                header("Location: admin/dashboard.php");
+                header("Location: ../pages/admin/home.php");
                 exit();
-            } else {
-                header("Location: ../pages/home.php");
+            } else if ($user['role'] == 'user') {
+                header("Location: ../pages/user/home.php");
                 exit();
             }
         } else {
