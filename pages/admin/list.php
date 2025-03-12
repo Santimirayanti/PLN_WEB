@@ -80,6 +80,7 @@ $result = $conn->query($query);
                             <option value="Disetujui" <?php echo ($row['approval'] === 'Disetujui') ? 'selected' : ''; ?>>Disetujui</option>
                         </select>
                     </td>
+
                     <td class="p-4">
                         <?php
                         $photos = !empty($row['photo_paths']) ? explode(',', $row['photo_paths']) : [];
@@ -89,13 +90,23 @@ $result = $conn->query($query);
                             <?php if (!empty($photos)): ?>
                                 <?php foreach ($photos as $file_path): ?>
                                     <?php
-                                    preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $file_path, $matches);
-                                    $google_drive_id = $matches[1] ?? '';
-                                    $image_url = $google_drive_id ?
-                                        "https://drive.google.com/thumbnail?id=$google_drive_id&sz=w500" :
-                                        htmlspecialchars($file_path, ENT_QUOTES, 'UTF-8'); // Fallback ke URL asli
+                                    // Ambil Google Drive File ID dari berbagai format URL yang mungkin
+                                    if (preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $file_path, $matches)) {
+                                        $google_drive_id = $matches[1];
+                                    } elseif (preg_match('/id=([a-zA-Z0-9_-]+)/', $file_path, $matches)) {
+                                        $google_drive_id = $matches[1];
+                                    } else {
+                                        $google_drive_id = '';
+                                    }
+
+                                    // Paksa semua gambar menggunakan format `lh3.googleusercontent.com`
+                                    if (!empty($google_drive_id)) {
+                                        $image_url = "https://lh3.googleusercontent.com/d/$google_drive_id=w500";
+                                    } else {
+                                        $image_url = 'https://via.placeholder.com/100?text=Error'; // Placeholder jika gagal mendapatkan ID
+                                    }
                                     ?>
-                                    <img src="<?php echo $image_url; ?>"
+                                    <img src="<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>"
                                         class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition"
                                         onclick="openModal(this)">
                                 <?php endforeach; ?>
@@ -104,6 +115,8 @@ $result = $conn->query($query);
                             <?php endif; ?>
                         </div>
                     </td>
+
+
 
                     <td class="p-4 text-center align-middle">
                         <button class="approval-submit px-4 py-2 bg-green-500 text-white rounded"

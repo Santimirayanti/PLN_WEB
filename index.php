@@ -14,7 +14,6 @@ if (isset($_SESSION['role'])) {
     }
 }
 
-// Fungsi untuk autentikasi user
 function authenticate_user($conn, $username, $password)
 {
     $sql = "SELECT id, username, password, role, email FROM users WHERE username = ?";
@@ -25,17 +24,15 @@ function authenticate_user($conn, $username, $password)
     $user = mysqli_fetch_assoc($result);
 
     if ($user && password_verify($password, $user['password'])) {
-        return $user; // Return data user jika login sukses
+        return $user;
     }
-    return false; // Return false jika gagal
+    return false;
 }
 
-// Cek data login jika form dikirim
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    // Validasi input kosong
     if (empty($username) || empty($password)) {
         $messages = "<div class='text-red-500'>Username dan Password wajib diisi!</div>";
     } else {
@@ -93,10 +90,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     <img src="assets\img\logo_pln.png" alt="Logo PLN" class="mx-auto w-24 mb-4" />
     <h2 class="text-2xl font-bold text-blue-600">Login</h2>
 
-    <!-- Menampilkan pesan error jika ada -->
     <?php if (!empty($messages)) echo "<p class='mt-4'>$messages</p>"; ?>
 
-    <!-- Form Login -->
     <form method="POST" class="mt-6">
       <input type="text" name="username" class="border p-2 rounded w-full" placeholder="Username" required />
       <input type="password" name="password" class="border p-2 rounded w-full mt-4" placeholder="Password" required />
