@@ -7,7 +7,6 @@ use Google\Service\Drive;
 
 session_start();
 
-// Pastikan user sudah login
 $user_id = $_SESSION['id'] ?? null;
 if (!$user_id) {
     header("Location: ../index.php");

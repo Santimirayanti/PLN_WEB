@@ -1,6 +1,17 @@
 <?php
 session_start();
-require '../config/database.php'; // Pastikan koneksi database sudah ada
+require '../config/database.php';
+
+$user_id = $_SESSION['id'] ?? null;
+if (!$user_id) {
+    header("Location: ../index.php");
+    exit;
+}
+
+if ($_SESSION['role'] !== 'Admin') {
+  header("Location: ../pages/user/home.php");
+  exit;
+}
 
 $messages = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
