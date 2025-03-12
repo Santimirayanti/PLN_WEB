@@ -153,6 +153,27 @@ $result = mysqli_stmt_get_result($stmt);
                                 <span class="text-gray-500">Belum Upload</span>
                             <?php endif; ?>
                         </td>
+    // Cek apakah ada gambar yang ditemukan
+    if (!empty($images)): ?>
+        <div class="flex flex-wrap justify-center gap-2">
+            <?php foreach ($images as $image): 
+                $image_path = "../../" . $image['file_path']; ?>
+                <?php if (file_exists($image_path)): ?>
+                    <img src="<?= htmlspecialchars($image_path); ?>"
+                        class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition"
+                        onclick="openModal(this)">
+                <?php else: ?>
+                    <span class="text-gray-500">Gambar tidak ditemukan</span>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </div>
+        <input type="file" name="image" accept=".jpg,.jpeg,.png" required
+                                    class="p-2 mt-4 border rounded">
+        <button type="upload" class="px-4 py-2 bg-blue-500 text-white rounded">Upload</button>
+    <?php else: ?>
+        <span class="text-gray-500">Belum Upload</span>
+    <?php endif; ?>
+</td>
 
 
                         <!-- Aksi -->
