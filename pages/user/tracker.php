@@ -4,7 +4,7 @@ session_start();
 
 $user_id = $_SESSION['id'] ?? null;
 if (!$user_id) {
-    header("Location: ../../auth/login.php");
+    header("Location: ../../index.php");
     exit;
 }
 
@@ -140,14 +140,15 @@ $result = mysqli_stmt_get_result($stmt);
                                 <?php if (!empty($images)): ?>
                                     <?php foreach ($images as $image):
                                         $image_id = $image['id'];
-                                        $image_path = "../../" . $image['file_path']; ?>
-                                        <?php if (file_exists($image_path)): ?>
+                                        $file_path = $image['file_path']; // URL yang disimpan di database
+
+                                        if (preg_match('/id=([a-zA-Z0-9_-]+)/', $file_path, $matches)): // Ekstrak Google Drive File ID
+                                            $google_drive_id = $matches[1];
+                                            $image_url = "https://cors.bridged.cc/https://lh3.googleusercontent.com/d/$google_drive_id";; // Gunakan direct download link
+                                    ?>
                                             <div class="relative">
-                                                <img src="<?= htmlspecialchars($image_path); ?>"
-                                                    class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition"
-                                                    onclick="openModal(this)">
-                                                <button onclick="deleteImage(<?= $image_id ?>, '<?= $image['file_path'] ?>')"
-                                                    class="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded-full">✕</button>
+                                                <img src="<?= $image_url ?>" class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition" onclick="openModal(this)">
+                                                <button onclick="deleteImage(<?= $image_id ?>, '<?= $file_path ?>')" class="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded-full">✕</button>
                                             </div>
                                         <?php else: ?>
                                             <span class="text-gray-500">Gambar tidak ditemukan</span>
@@ -157,6 +158,9 @@ $result = mysqli_stmt_get_result($stmt);
                                     <span class="text-gray-500">Belum Upload</span>
                                 <?php endif; ?>
                             </div>
+
+
+
 
                             <!-- Form Upload Gambar -->
                             <form method="POST" action="../../config/upload.php" enctype="multipart/form-data" class="mt-4">
