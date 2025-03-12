@@ -149,6 +149,9 @@ $result = mysqli_stmt_get_result($stmt);
                 <?php endif; ?>
             <?php endforeach; ?>
         </div>
+        <input type="file" name="image" accept=".jpg,.jpeg,.png" required
+                                    class="p-2 mt-4 border rounded">
+        <button type="upload" class="px-4 py-2 bg-blue-500 text-white rounded">Upload</button>
     <?php else: ?>
         <span class="text-gray-500">Belum Upload</span>
     <?php endif; ?>
@@ -177,10 +180,6 @@ $result = mysqli_stmt_get_result($stmt);
                                         <option value="Safety briefing">Safety briefing sebelum pemeliharaan</option>
                                     </optgroup>
                                 </select>
-
-                                <input type="file" name="image" accept=".jpg,.jpeg,.png" required
-                                    class="p-2 border rounded">
-
                                 <button type="submit" class="px-4 py-1 bg-blue-500 text-white rounded">Kirim</button>
                             </form>
 
