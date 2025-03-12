@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg text-center w-96">
+      <img
+        src="..\assets\img\logo_pln.png"
+        alt="Logo PLN"
+        class="mx-auto w-24 mb-4"
+      />
+      <h2 class="text-2xl font-bold text-blue-600">Login</h2>
+
+      <!-- Form Login -->
+      <form id="loginForm" class="mt-6">
+        <input
+          type="text"
+          id="loginUsername"
+          class="border p-2 rounded w-full"
+          placeholder="Username"
+          required
+        />
+        <input
+          type="password"
+          id="loginPassword"
+          class="border p-2 rounded w-full mt-4"
+          placeholder="Password"
+          required
+        />
+        <button
+          type="submit"
+          class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 w-full"
+        >
+          Login
+        </button>
+      </form>
+
+      <p id="loginError" class="text-red-500 mt-4 hidden">
+        Username atau Password salah!
+      </p>
+
+      <p class="mt-4 text-gray-600">Belum punya akun?</p>
+      <button
+        id="showRegister"
+        class="text-blue-500 underline cursor-pointer mt-2"
+      >
+        Buat Akun
+      </button>
+
+      <!-- Form Registrasi (Hidden by Default) -->
+      <form id="registerForm" class="mt-6 hidden">
+        <input
+          type="text"
+          id="registerUsername"
+          class="border p-2 rounded w-full"
+          placeholder="Buat Username"
+          required
+        />
+        <input
+          type="password"
+          id="registerPassword"
+          class="border p-2 rounded w-full mt-4"
+          placeholder="Buat Password"
+          required
+        />
+        <button
+          type="submit"
+          class="mt-4 px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 w-full"
+        >
+          Daftar
+        </button>
+      </form>
+
+      <p id="registerError" class="text-red-500 mt-4 hidden"></p>
+      <p id="registerSuccess" class="text-green-500 mt-4 hidden">
+        Akun berhasil dibuat! Silakan login.
+      </p>
+
+      <button
+        id="backToLogin"
+        class="text-blue-500 underline cursor-pointer mt-4 hidden"
+      >
+        Kembali ke Login
+      </button>
+    </div>
+
+    <script>
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const username = document
+            .getElementById("loginUsername")
+            .value.trim();
+          const password = document
+            .getElementById("loginPassword")
+            .value.trim();
+          let users = JSON.parse(localStorage.getItem("users")) || [];
+
+          // Cek apakah username dan password cocok
+          const foundUser = users.find(
+            (user) =>
+              user.username === username && user.password === btoa(password)
+          );
+
+          if (foundUser) {
+            localStorage.setItem("isLoggedIn", "true");
+            localStorage.setItem("currentUser", username);
+
+            window.location.href = "../pages/user/home.html"; // Redirect ke halaman utama
+          } else {
+            document.getElementById("loginError").classList.remove("hidden");
+          }
+        });
+
+      document
+        .getElementById("registerForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const newUsername = document
+            .getElementById("registerUsername")
+            .value.trim();
+          const newPassword = document
+            .getElementById("registerPassword")
+            .value.trim();
+          let users = JSON.parse(localStorage.getItem("users")) || [];
+
+          if (newUsername.length < 4 || newPassword.length < 6) {
+            document.getElementById("registerError").textContent =
+              "Username minimal 4 karakter & Password minimal 6 karakter!";
+            document.getElementById("registerError").classList.remove("hidden");
+            return;
+          }
+
+          if (users.some((user) => user.username === newUsername)) {
+            document.getElementById("registerError").textContent =
+              "Username sudah terdaftar!";
+            document.getElementById("registerError").classList.remove("hidden");
+            return;
+          }
+
+          users.push({ username: newUsername, password: btoa(newPassword) });
+          localStorage.setItem("users", JSON.stringify(users));
+
+          document.getElementById("registerForm").classList.add("hidden");
+          document.getElementById("registerSuccess").classList.remove("hidden");
+          document.getElementById("backToLogin").classList.remove("hidden");
+        });
+
+      // Toggle antara Login & Registrasi
+      document
+        .getElementById("showRegister")
+        .addEventListener("click", function () {
+          document.getElementById("loginForm").classList.add("hidden");
+          document.getElementById("registerForm").classList.remove("hidden");
+          document.getElementById("showRegister").classList.add("hidden");
+          document.getElementById("backToLogin").classList.remove("hidden");
+        });
+
+      document
+        .getElementById("backToLogin")
+        .addEventListener("click", function () {
+          document.getElementById("registerForm").classList.add("hidden");
+          document.getElementById("loginForm").classList.remove("hidden");
+          document.getElementById("showRegister").classList.remove("hidden");
+          document.getElementById("registerSuccess").classList.add("hidden");
+          document.getElementById("registerError").classList.add("hidden");
+          document.getElementById("backToLogin").classList.add("hidden");
+        });
+    </script>
+  </body>
+</html>

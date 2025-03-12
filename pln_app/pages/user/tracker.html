@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker - PLN Web App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <button onclick="window.location.href='home.html'" class="mb-4 px-4 py-2 bg-gray-500 text-white rounded">Kembali</button>
+
+    <h1 class="text-2xl font-bold mb-4">Tracker Pekerjaan</h1>
+
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-max bg-white shadow-md rounded-lg overflow-hidden text-sm md:text-base">
+            <thead class="bg-[#009DDB] text-white">
+                <tr>
+                    <th class="p-4">Nama Pekerjaan</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4">Approved</th>
+                    <th class="p-4">Upload</th>
+                    <th class="p-4">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b">
+                    <td class="p-4">Pengecekan Instalasi</td>
+                    <td class="p-4 text-center align-middle"><span class="px-4 py-2 bg-red-500 text-white rounded">Pending</span></td>
+                    <td class="p-4 text-center align-middle"><span class="px-4 py-2 bg-yellow-500 text-white rounded">Need Review</span></td>
+                    <td class="p-4">
+                        <select class="w-full p-2 border rounded">
+                            <option value="Upload foto pelaksanaan">Upload foto pelaksanaan</option>
+                            <optgroup label="Foto Kegiatan">
+                                <option value="Pengecekan Dokumen">Pengecekan Dokumen DP3, JSA, WP</option>
+                                <option value="Pantauan hotspot">Pantauan hotspot sebelum manuver</option>
+                                <option value="Manuver SOP">Manuver menggunakan SOP Berbasis foto</option>
+                                <option value="Pengecekan Arus">Pengecekan parameter arus-tegangan setelah pembebasan</option>
+                                <option value="Pemasangan Grounding">Pemasangan grounding</option>
+                                <option value="Pemasangan LOTO">Pemasangan LOTO</option>
+                                <option value="Safety briefing">Safety briefing sebelum pemeliharaan</option>
+                            </optgroup>
+                        </select>
+                        <input type="file" class="mt-2 w-full">
+                    </td>
+                    <td class="p-4 text-center align-middle">
+                        <div class="flex flex-col space-y-2">
+                            <button class="px-4 py-1 bg-green-500 text-white rounded">Kirim</button>
+                            <button class="px-4 py-1 bg-red-500 text-white rounded">Hapus</button>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="border-b">
+                    <td class="p-4">Pemeliharaan Gardu</td>
+                    <td class="p-4 text-center align-middle"><span class="px-4 py-2 bg-green-500 text-white rounded">Completed</span></td>
+                    <td class="p-4 text-center align-middle"><span class="px-4 py-2 bg-green-500 text-white rounded">Approved</span></td>
+                    <td class="p-4">
+                        <select class="w-full p-2 border rounded">
+                            <option value="Upload foto pelaksanaan">Upload foto pelaksanaan</option>
+                            <optgroup label="Foto Kegiatan">
+                                <option value="Pengecekan Dokumen">Pengecekan Dokumen DP3, JSA, WP</option>
+                                <option value="Pantauan hotspot">Pantauan hotspot sebelum manuver</option>
+                                <option value="Manuver SOP">Manuver menggunakan SOP Berbasis foto</option>
+                                <option value="Pengecekan Arus">Pengecekan parameter arus-tegangan setelah pembebasan</option>
+                                <option value="Pemasangan Grounding">Pemasangan grounding</option>
+                                <option value="Pemasangan LOTO">Pemasangan LOTO</option>
+                                <option value="Safety briefing">Safety briefing sebelum pemeliharaan</option>
+                            </optgroup>
+                        </select>
+                        <input type="file" class="mt-2 w-full">
+                    </td>
+                    <td class="p-4 text-center align-middle">
+                        <div class="flex flex-col space-y-2">
+                            <button class="px-4 py-1 bg-green-500 text-white rounded">Kirim</button>
+                            <button class="px-4 py-1 bg-red-500 text-white rounded">Hapus</button>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="border-b">
+                    <td class="p-4">Pengecekan Kabel</td>
+                    <td class="p-4 text-center align-middle"><span class="px-4 py-2 bg-yellow-500 text-white rounded">In progress</span></td>
+                    <td class="p-4 text-center align-middle"><span class="px-4 py-2 bg-red-500 text-white rounded">Pending</span></td>
+                    <td class="p-4">
+                        <select class="w-full p-2 border rounded">
+                            <option value="Upload foto pelaksanaan">Upload foto pelaksanaan</option>
+                            <optgroup label="Foto Kegiatan">
+                                <option value="Pengecekan Dokumen">Pengecekan Dokumen DP3, JSA, WP</option>
+                                <option value="Pantauan hotspot">Pantauan hotspot sebelum manuver</option>
+                                <option value="Manuver SOP">Manuver menggunakan SOP Berbasis foto</option>
+                                <option value="Pengecekan Arus">Pengecekan parameter arus-tegangan setelah pembebasan</option>
+                                <option value="Pemasangan Grounding">Pemasangan grounding</option>
+                                <option value="Pemasangan LOTO">Pemasangan LOTO</option>
+                                <option value="Safety briefing">Safety briefing sebelum pemeliharaan</option>
+                            </optgroup>
+                        </select>
+                        <input type="file" class="mt-2 w-full">
+                    </td>
+                    <td class="p-4 text-center align-middle">
+                        <div class="flex flex-col space-y-2">
+                            <button class="px-4 py-1 bg-green-500 text-white rounded">Kirim</button>
+                            <button class="px-4 py-1 bg-red-500 text-white rounded">Hapus</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
