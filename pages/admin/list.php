@@ -2,7 +2,6 @@
 require '../../config/database.php';
 
 session_start();
-require '../../config/database.php';
 
 if (!isset($_SESSION['id'])) {
   header("Location: ../../auth/login.php");

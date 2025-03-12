@@ -11,7 +11,7 @@ if (!$user_id) {
 if ($_SESSION['role'] !== 'User') {
     header("Location: ../admin/home.php");
     exit;
-  }
+}
   
 
 $successMessage = $_GET['success'] ?? null;
