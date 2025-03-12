@@ -99,9 +99,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
         Login
       </button>
     </form>
-
-    <p class="mt-4 text-gray-600">Belum punya akun?</p>
-    <a href="auth/register.php" class="text-blue-500 underline cursor-pointer mt-2">Buat Akun</a>
   </div>
 
   <script>

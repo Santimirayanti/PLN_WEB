@@ -87,12 +87,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="password" name="password" class="border p-2 rounded w-full mt-4" placeholder="Buat Password" required />
             <input type="password" name="repeatPassword" class="border p-2 rounded w-full mt-4" placeholder="Ulangi Password" required />
             <button type="submit" class="mt-4 px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 w-full">Daftar</button>
+            <button onclick="window.history.back()" class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-gray-600 w-full">Kembali</button>
         </form>
-
-        <p class="mt-4 text-gray-600">
-            Sudah punya akun?
-            <a href="../index.php" class="text-blue-500 hover:underline">Login di sini</a>
-        </p>
     </div>
 </body>
 

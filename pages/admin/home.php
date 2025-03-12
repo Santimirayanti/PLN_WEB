@@ -17,9 +17,13 @@ $user_id = (int) $_SESSION['id'];
 
 
 $query = "SELECT projects.id AS project_id, projects.name, projects.date, 
-                 projects.status, projects.approval, users.username 
-          FROM projects
-          JOIN users ON projects.user_id = users.id";
+       projects.status, projects.approval, users.username, 
+       uploads.category, GROUP_CONCAT(uploads.file_path) AS photo_paths
+FROM projects
+JOIN users ON projects.user_id = users.id
+LEFT JOIN uploads ON projects.id = uploads.project_id
+GROUP BY projects.id, uploads.category";
+          
 $result = mysqli_query($conn, $query);
 
 
@@ -47,6 +51,7 @@ $projects = mysqli_fetch_all($result, MYSQLI_ASSOC);
     <nav class="mt-10">
       <a href="home.php" class="block py-3 px-4 text-lg text-[#009DDB] hover:bg-[#8ac8e0] hover:text-white">Dashboard</a>
       <a href="list.php" class="block py-3 px-4 text-lg text-[#009DDB] hover:bg-[#8ac8e0] hover:text-white">Approval List</a>
+      <a href="../../auth/register.php" class="block py-3 px-4 text-lg text-[#009DDB] hover:bg-[#8ac8e0] hover:text-white">Create Account User</a>
       <button onclick="window.location.href='../../auth/logout.php'" class="block py-3 px-4 w-full text-left text-lg text-red-600 hover:bg-red-400 hover:text-white">Logout</button>
     </nav>
   </aside>
@@ -72,11 +77,16 @@ $projects = mysqli_fetch_all($result, MYSQLI_ASSOC);
       <label for="status-filter" class="block text-gray-700 mt-4">Filter by Status:</label>
       <select id="status-filter" class="w-full p-2 border border-gray-300 rounded mt-2">
         <option value="all">All</option>
-        <option value="Butuh Peninjauan">Need Review</option>
-        <option value="Disetujui">Approved</option>
-        <option value="Ditolak">Rejected</option>
+        <option value="Butuh Peninjauan">Butuh Peninjauan</option>
+        <option value="Disetujui">Disetujui</option>
+        <option value="Ditolak">Ditolak</option>
       </select>
-
+      <div class="flex justify-end mt-4">
+        <button onclick="exportToCSV()" 
+            class="px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 shadow-md transition">
+            📥 Download CSV
+        </button>
+    </div>
       <div class="overflow-y-auto max-h-64">
         <table class="w-full mt-4 border-collapse border border-gray-300">
           <thead>
@@ -141,6 +151,38 @@ $projects = mysqli_fetch_all($result, MYSQLI_ASSOC);
       });
     });
   </script>
+  <script>
+    function exportToCSV() {
+        let table = document.getElementById("approval-table"); 
+        let rows = table.getElementsByTagName("tr");
+        let csvContent = "data:text/csv;charset=utf-8,";
+        let headers = ["Project Name", "Submitted By", "Status", "Approval"];
+
+        // Tambahkan header ke CSV
+        csvContent += headers.join(",") + "\n";
+
+        // Loop setiap baris dan ambil data
+        for (let i = 0; i < rows.length; i++) {
+            let cols = rows[i].getElementsByTagName("td");
+            let rowData = [];
+
+            for (let j = 0; j < cols.length; j++) {
+                rowData.push(cols[j].innerText.trim());
+            }
+
+            csvContent += rowData.join(",") + "\n";
+        }
+
+        // Membuat file CSV dan unduh
+        let encodedUri = encodeURI(csvContent);
+        let link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "Projects_Awaiting_Approval.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
 </body>
 
 </html>
