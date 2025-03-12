@@ -8,6 +8,14 @@ if (!$user_id) {
     exit;
 }
 
+if ($_SESSION['role'] !== 'Admin') {
+    header("Location: ../admin/home.php");
+    exit;
+  }
+  
+
+$successMessage = $_GET['success'] ?? null;
+
 $sql = "SELECT id, name, status, approval FROM projects WHERE user_id = ?";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, "i", $user_id);
@@ -25,8 +33,14 @@ $result = mysqli_stmt_get_result($stmt);
 </head>
 
 <body class="bg-gray-100 p-6">
+    <button onclick="window.location.href='home.php'" class="mb-4 px-4 py-2 bg-gray-500 text-white rounded">Kembali</button>
 
     <h1 class="text-2xl font-bold mb-4">Tracker Pekerjaan</h1>
+    <?php if ($successMessage) : ?>
+        <div class="mb-4 p-3 bg-green-500 text-white rounded">
+            <?= htmlspecialchars($successMessage) ?>
+        </div>
+    <?php endif; ?>
 
     <div class="overflow-x-auto">
         <table class="w-full min-w-max bg-white shadow-md rounded-lg overflow-hidden text-sm md:text-base">
@@ -56,7 +70,6 @@ $result = mysqli_stmt_get_result($stmt);
                         <!-- Nama Pekerjaan -->
                         <td class="p-4"><?= htmlspecialchars($row['name']) ?></td>
 
-                        <!-- Status Proyek -->
                         <td class="p-4 text-center">
                             <?php
                             $statusClass = match ($row['status']) {
@@ -65,8 +78,30 @@ $result = mysqli_stmt_get_result($stmt);
                                 'Selesai' => 'bg-green-500',
                                 default => 'bg-gray-500'
                             };
+
+                            $isRejected = ($row['approval'] == 'Ditolak');
                             ?>
-                            <span class="px-4 py-2 <?= $statusClass ?> text-white rounded"><?= htmlspecialchars($row['status']) ?></span>
+
+                            <!-- Status sebagai teks -->
+                            <div class="flex flex-col items-center">
+                                <span class="px-4 py-2 <?= $statusClass ?> text-white rounded-full text-sm font-semibold">
+                                    <?= htmlspecialchars($row['status']) ?>
+                                </span>
+
+                                <!-- Dropdown Status -->
+                                <select class="status-dropdown mt-2 w-full max-w-[200px] p-2 border rounded-lg text-sm 
+                        <?= $isRejected ? 'bg-gray-300 cursor-not-allowed opacity-60' : 'bg-white' ?>"
+                                    data-project-id="<?= $row['id'] ?>"
+                                    <?= $isRejected ? 'disabled' : 'onchange="updateStatus(this)"' ?>>
+                                    <option value="Belum Dimulai" <?= ($row['status'] == 'Belum Dimulai') ? 'selected' : ''; ?>>Belum Dimulai</option>
+                                    <option value="Dalam Progress" <?= ($row['status'] == 'Dalam Progress') ? 'selected' : ''; ?>>Dalam Progress</option>
+                                    <option value="Selesai" <?= ($row['status'] == 'Selesai') ? 'selected' : ''; ?>>Selesai</option>
+                                </select>
+
+                                <?php if ($isRejected): ?>
+                                    <p class="text-red-500 text-xs mt-1 italic">Status tidak bisa diubah karena ditolak.</p>
+                                <?php endif; ?>
+                            </div>
                         </td>
 
                         <!-- Status Approval -->
@@ -86,8 +121,8 @@ $result = mysqli_stmt_get_result($stmt);
                         <!-- Gambar -->
                         <td class="p-4 text-center">
                             <?php if ($image_path) : ?>
-                                <a href="<?= htmlspecialchars($image_path) ?>" target="_blank">
-                                    <img src="<?= htmlspecialchars($image_path) ?>" class="w-16 h-16 rounded border" alt="Gambar">
+                                <a href="../../<?= htmlspecialchars($image_path) ?>" target="_blank">
+                                    <img src="../../<?= htmlspecialchars($image_path) ?>" class="w-16 h-16 rounded border" alt="Gambar">
                                 </a>
                             <?php else : ?>
                                 <span class="text-gray-500">Belum Upload</span>
@@ -96,31 +131,38 @@ $result = mysqli_stmt_get_result($stmt);
 
                         <!-- Aksi -->
                         <td class="p-4 text-center">
-                            <?php if ($row['approval'] == 'Belum Diajukan') : ?>
-                                <form method="POST" action="../../config/kirim.php" enctype="multipart/form-data">
-                                    <input type="hidden" name="project_id" value="<?= $row['id'] ?>">
+                            <div class="flex items-center gap-2 justify-center">
+                                <?php if ($row['approval'] == 'Belum Diajukan' || $row['approval'] == 'Butuh Peninjauan') : ?>
+                                    <form method="POST" action="../../config/kirim.php" enctype="multipart/form-data">
+                                        <input type="hidden" name="project_id" value="<?= $row['id'] ?>">
+                                        <input type="hidden" name="status" value="<?= htmlspecialchars($row['status']) ?>"> <!-- Input Hidden -->
 
-                                    <select name="category" required class="w-full p-2 border rounded">
-                                        <option value="Upload foto pelaksanaan">Upload foto pelaksanaan</option>
-                                        <optgroup label="Foto Kegiatan">
-                                            <option value="Pengecekan Dokumen">Pengecekan Dokumen DP3, JSA, WP</option>
-                                            <option value="Pantauan hotspot">Pantauan hotspot sebelum manuver</option>
-                                            <option value="Manuver SOP">Manuver menggunakan SOP Berbasis foto</option>
-                                            <option value="Pengecekan Arus">Pengecekan parameter arus-tegangan setelah pembebasan</option>
-                                            <option value="Pemasangan Grounding">Pemasangan grounding</option>
-                                            <option value="Pemasangan LOTO">Pemasangan LOTO</option>
-                                            <option value="Safety briefing">Safety briefing sebelum pemeliharaan</option>
-                                        </optgroup>
-                                    </select>
+                                        <select name="category" required class="p-2 border rounded">
+                                            <option value="Upload foto pelaksanaan">Upload foto pelaksanaan</option>
+                                            <optgroup label="Foto Kegiatan">
+                                                <option value="Pengecekan Dokumen">Pengecekan Dokumen DP3, JSA, WP</option>
+                                                <option value="Pantauan hotspot">Pantauan hotspot sebelum manuver</option>
+                                                <option value="Manuver SOP">Manuver menggunakan SOP Berbasis foto</option>
+                                                <option value="Pengecekan Arus">Pengecekan parameter arus-tegangan setelah pembebasan</option>
+                                                <option value="Pemasangan Grounding">Pemasangan grounding</option>
+                                                <option value="Pemasangan LOTO">Pemasangan LOTO</option>
+                                                <option value="Safety briefing">Safety briefing sebelum pemeliharaan</option>
+                                            </optgroup>
+                                        </select>
 
-                                    <input type="file" name="image" accept=".jpg,.jpeg,.png" required class="mt-2 w-full">
+                                        <input type="file" name="image" accept=".jpg,.jpeg,.png" required class="p-2 border rounded">
 
-                                    <button type="submit" class="mt-2 px-4 py-1 bg-blue-500 text-white rounded">Kirim</button>
-                                </form>
-                            <?php endif; ?>
+                                        <button type="submit" class="px-4 py-1 bg-blue-500 text-white rounded">Kirim</button>
+                                    </form>
 
-                            <a href="hapus.php?id=<?= $row['id'] ?>" class="px-4 py-1 bg-red-500 text-white rounded" onclick="return confirm('Apakah Anda yakin ingin menghapus?');">Hapus</a>
+                                <?php endif; ?>
+
+                                <a href="../../config/hapus.php?id=<?= $row['id'] ?>"
+                                    class="px-4 py-1 bg-red-500 text-white rounded"
+                                    onclick="return confirm('Apakah Anda yakin ingin menghapus?');">Hapus</a>
+                            </div>
                         </td>
+
                     </tr>
                 <?php endwhile; ?>
             </tbody>
@@ -128,6 +170,26 @@ $result = mysqli_stmt_get_result($stmt);
     </div>
 
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".status-dropdown").forEach(select => {
+            select.addEventListener("change", function() {
+                let projectId = this.getAttribute("data-project-id");
+
+                // Cari form yang sesuai dengan project_id
+                let form = document.querySelector(`form input[name="project_id"][value="${projectId}"]`)?.closest("form");
+
+                if (form) {
+                    let hiddenInput = form.querySelector("input[name='status']");
+                    if (hiddenInput) {
+                        hiddenInput.value = this.value; // Set nilai baru
+                    }
+                }
+            });
+        });
+    });
+</script>
+
 
 </html>
 <?php mysqli_close($conn); ?>

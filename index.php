@@ -1,132 +1,97 @@
+<?php
+require 'config/database.php';
+session_start();
+
+$messages = "";
+
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] == 'Admin') {
+        header("Location: pages/admin/home.php");
+        exit();
+    } else {
+        header("Location: pages/user/home.php");
+        exit();
+    }
+}
+
+// Fungsi untuk autentikasi user
+function authenticate_user($conn, $username, $password)
+{
+    $sql = "SELECT id, username, password, role, email FROM users WHERE username = ?";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $user = mysqli_fetch_assoc($result);
+
+    if ($user && password_verify($password, $user['password'])) {
+        return $user; // Return data user jika login sukses
+    }
+    return false; // Return false jika gagal
+}
+
+// Cek data login jika form dikirim
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
+
+    // Validasi input kosong
+    if (empty($username) || empty($password)) {
+        $messages = "<div class='text-red-500'>Username dan Password wajib diisi!</div>";
+    } else {
+        $user = authenticate_user($conn, $username, $password);
+
+        if ($user) {
+            $_SESSION['id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
+            $_SESSION['email'] = $user['email'];
+
+            // Arahkan berdasarkan role
+            if ($user['role'] == 'Admin') {
+                header("Location: pages/admin/home.php");
+                exit();
+            } else if ($user['role'] == 'User') {
+                header("Location: pages/user/home.php");
+                exit();
+            }
+        } else {
+            $messages = "<div class='text-red-500'>Username atau Password salah!</div>";
+        }
+    }
+}
+?>
+
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard - PLN Web App</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </head>
-  <body class="bg-gray-100">
-    <!-- Ini nda perlu pake -->
-    <!-- <script>
-      // Cek apakah pengguna sudah login
-      if (!localStorage.getItem("isLoggedIn")) {
-        window.location.href = "auth/login.html"; // Redirect ke login jika belum login
-      }
+<html lang="id">
 
-      // Fungsi Logout
-      function logout() {
-        localStorage.removeItem("isLoggedIn"); // Hapus status login
-        window.location.href = "auth/login.html"; // Redirect ke login
-      }
-    </script> -->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Halaman Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
 
-    <div class="flex h-screen">
-      <!-- Sidebar -->
-      <aside
-        class="w-64 bg-[#ffffff] text-white p-5 flex flex-col items-center"
-      >
-        <img
-          src="assets\img\logo_pln.png"
-          alt="PLN Logo"
-          class="w-24 mb-4"
-        />
-        <nav class="mt-5 w-full">
-          <a
-            href="home.html"
-            class="block py-2 px-4 hover:bg-[#8ac8e0] hover:text-white text-[#009DDB]"
-            >Dashboard</a
-          >
-          <a
-            href="new_project.html"
-            class="block py-2 px-4 hover:bg-[#8ac8e0] hover:text-white text-[#009DDB]"
-            >New Project</a
-          >
-          <a
-            href="tracker.html"
-            class="block py-2 px-4 hover:bg-[#8ac8e0] hover:text-white text-[#009DDB]"
-            >Tracker</a
-          >
-          <button
-            id="logoutButton"
-            class="block py-2 px-4 w-full text-left hover:bg-[#FF6B6B] text-[#009DDB]"
-          >
-            Logout
-          </button>
-        </nav>
-      </aside>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+  <div class="bg-white p-8 rounded-lg shadow-lg text-center w-96">
+    <img src="assets\img\logo_pln.png" alt="Logo PLN" class="mx-auto w-24 mb-4" />
+    <h2 class="text-2xl font-bold text-blue-600">Login</h2>
 
-      <!-- Main Content -->
-      <main class="flex-1 p-6">
-        <h1 class="text-2xl font-bold mb-4">Dashboard</h1>
+    <!-- Menampilkan pesan error jika ada -->
+    <?php if (!empty($messages)) echo "<p class='mt-4'>$messages</p>"; ?>
 
-        <!-- Cards Section -->
-        <div class="grid grid-cols-4 gap-4">
-          <div class="bg-[#009DDB] p-4 rounded-lg shadow">
-            <h3 class="text-lg font-semibold">Total Projects</h3>
-            <p id="total-projects" class="text-2xl font-bold">0</p>
-          </div>
-          <div class="bg-[#009DDB] p-4 rounded-lg shadow">
-            <h3 class="text-lg font-semibold">Completed Projects</h3>
-            <p id="completed-projects" class="text-2xl font-bold">0</p>
-          </div>
-          <div class="bg-[#009DDB] p-4 rounded-lg shadow">
-            <h3 class="text-lg font-semibold">In Progress</h3>
-            <p id="in-progress" class="text-2xl font-bold">0</p>
-          </div>
-          <div class="bg-[#009DDB] p-4 rounded-lg shadow">
-            <h3 class="text-lg font-semibold">Pending</h3>
-            <p id="pending-projects" class="text-2xl font-bold">0</p>
-          </div>
-        </div>
+    <!-- Form Login -->
+    <form method="POST" class="mt-6">
+      <input type="text" name="username" class="border p-2 rounded w-full" placeholder="Username" required />
+      <input type="password" name="password" class="border p-2 rounded w-full mt-4" placeholder="Password" required />
+      <button type="submit" name="login" class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 w-full">
+        Login
+      </button>
+    </form>
 
-        <!-- Chart Section -->
-        <div class="bg-[#009DDB] p-4 rounded-lg shadow mt-6">
-          <h3 class="text-lg font-semibold mb-4 text-center text-white">
-            Project Status Overview
-          </h3>
-          <div class="flex justify-center">
-            <canvas id="projectChart" class="w-48 h-48"></canvas>
-          </div>
-        </div>
+    <p class="mt-4 text-gray-600">Belum punya akun?</p>
+    <a href="auth/register.php" class="text-blue-500 underline cursor-pointer mt-2">Buat Akun</a>
+  </div>
+</body>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        let projects = JSON.parse(localStorage.getItem("projects")) || [];
-
-        let total = projects.length;
-        let completed = projects.filter((p) => p.status === "Selesai").length;
-        let inProgress = projects.filter(
-          (p) => p.status === "Dalam Progress"
-        ).length;
-        let pending = projects.filter(
-          (p) => p.status === "Belum Dimulai"
-        ).length;
-
-        document.getElementById("total-projects").textContent = total;
-        document.getElementById("completed-projects").textContent = completed;
-        document.getElementById("in-progress").textContent = inProgress;
-        document.getElementById("pending-projects").textContent = pending;
-
-        const ctx = document.getElementById("projectChart").getContext("2d");
-        new Chart(ctx, {
-          type: "doughnut",
-          data: {
-            labels: ["Completed", "In Progress", "Pending"],
-            datasets: [
-              {
-                data: [completed, inProgress, pending],
-                backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-          },
-        });
-      });
-    </script>
-  </body>
 </html>

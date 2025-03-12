@@ -7,6 +7,11 @@ if (!isset($_SESSION['id'])) {
   exit;
 }
 
+if ($_SESSION['role'] !== 'User') {
+  header("Location: ../admin/home.php");
+  exit;
+}
+
 $user_id = (int) $_SESSION['id'];
 
 // Ambil data proyek dari database
@@ -21,25 +26,26 @@ $total = 0;
 $notStarted = 0;
 $completed = 0;
 $inProgress = 0;
-$pending = 0;
+$denied = 0;
 
 while ($row = mysqli_fetch_assoc($result)) {
     $total++;
     if ($row['approval'] === "Disetujui" && $row['status'] === "Selesai") {
         $completed++;
-    } elseif ($row['status'] === "Dalam Progress" ) {
+    } elseif ($row['status'] === "Dalam Progress" && $row['approval'] === "Disetujui" || $row['status'] === "Dalam Progress" && $row['approval'] === "Butuh Peninjauan" || $row['status'] === "Dalam Progress" && $row['approval'] === "Belum Diajukan") {
         $inProgress++;
-    } elseif ($row['approval'] === "Butuh Peninjauan") {
-        $pending++;
-    } elseif ($row['status'] === "Belum Dimulai") {
+    } elseif ($row['approval'] === "Ditolak") {
+        $denied++;
+    } elseif ($row['status'] === "Belum Dimulai" && $row['approval'] === "Disetujui" || $row['status'] === "Belum Dimulai" && $row['approval'] === "Butuh Peninjauan" || $row['status'] === "Belum Dimulai" && $row['approval'] === "Belum Diajukan") {
         $notStarted++;
     }
 }
 
+
 mysqli_stmt_close($stmt);
 mysqli_close($conn);
 
-$chartData = json_encode([$completed, $inProgress, $pending, $notStarted]);
+$chartData = json_encode([$completed, $inProgress, $denied, $notStarted]);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -67,7 +73,7 @@ $chartData = json_encode([$completed, $inProgress, $pending, $notStarted]);
         <a href="home.php" class="block py-3 px-4 text-lg text-[#009DDB] hover:bg-[#8ac8e0] hover:text-white">Dashboard</a>
         <a href="new_project.php" class="block py-3 px-4 text-lg text-[#009DDB] hover:bg-[#8ac8e0] hover:text-white">New Project</a>
         <a href="tracker.php" class="block py-3 px-4 text-lg text-[#009DDB] hover:bg-[#8ac8e0] hover:text-white">Tracker</a>
-        <button onclick="window.location.href='../../auth/login.php'" class="block py-3 px-4 w-full text-left text-lg text-red-600 hover:bg-red-400 hover:text-white">Logout</button>
+        <button onclick="window.location.href='../../auth/logout.php'" class="block py-3 px-4 w-full text-left text-lg text-red-600 hover:bg-red-400 hover:text-white">Logout</button>
       </nav>
     </aside>
     
@@ -87,8 +93,8 @@ $chartData = json_encode([$completed, $inProgress, $pending, $notStarted]);
           <p class="text-3xl font-bold text-black-600"><?= $inProgress ?></p>
         </div>
         <div class="bg-[#8ac8e0] p-6 rounded-xl shadow-lg">
-          <h3 class="text-lg font-semibold text-black-600">Need Review</h3>
-          <p class="text-3xl font-bold text-black-600"><?= $pending ?></p>
+          <h3 class="text-lg font-semibold text-black-600">Rejected</h3>
+          <p class="text-3xl font-bold text-black-600"><?= $denied ?></p>
         </div>
         <div class="bg-[#8ac8e0] p-6 rounded-xl shadow-lg">
           <h3 class="text-lg font-semibold text-black-600">Completed Projects</h3>
@@ -126,7 +132,7 @@ $chartData = json_encode([$completed, $inProgress, $pending, $notStarted]);
         new Chart(ctx, {
           type: "doughnut",
           data: {
-            labels: ["Completed", "In Progress", "Need Review", "Not Yet Started"],
+            labels: ["Completed", "In Progress", "Rejected", "Not Yet Started"],
             datasets: [
               {
                 data: chartData,

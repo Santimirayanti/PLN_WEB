@@ -2,9 +2,17 @@
 session_start();
 require_once '../../config/database.php';
 
-if (!isset($_SESSION['id'])) {
-  die("Anda harus login!");
+$user_id = $_SESSION['id'] ?? null;
+if (!$user_id) {
+    header("Location: ../../auth/login.php");
+    exit;
 }
+
+if ($_SESSION['role'] !== 'User') {
+  header("Location: ../admin/home.php");
+  exit;
+}
+
 
 $messages = "";
 
@@ -13,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $user_id = (int) $_SESSION['id'];
   $date = trim($_POST['date']);
   $status = "Belum Dimulai";
-  $approval = "Belum Disetujui";
+  $approval = "Pending";
 
   if (empty($name) || empty($date) || empty($status)) {
     $messages = "<div class='text-red-500'>Semua kolom harus diisi!</div>";
