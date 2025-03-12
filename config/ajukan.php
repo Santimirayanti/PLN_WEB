@@ -10,23 +10,20 @@ if (!$user_id) {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $project_id = $_POST['project_id'] ?? null;
-    $status = $_POST['status'] ?? null;
     $category = $_POST['category'] ?? null;
-    $approval = 'Butuh Peninjauan'; // Set approval otomatis
+    $approval = 'Butuh Peninjauan';
 
-    if (!$project_id || !$status || !$category) {
+    if (!$project_id || !$category) {
         header("Location: ../pages/user/tracker.php?error=Data tidak lengkap!");
         exit;
     }
 
-    // Update status dan approval di tabel projects
-    $updateProjectSql = "UPDATE projects SET status = ?, approval = ? WHERE id = ?";
+    $updateProjectSql = "UPDATE projects SET approval = ? WHERE id = ?";
     $stmtProject = mysqli_prepare($conn, $updateProjectSql);
-    mysqli_stmt_bind_param($stmtProject, "ssi", $status, $approval, $project_id);
+    mysqli_stmt_bind_param($stmtProject, "si", $approval, $project_id);
     $executeProject = mysqli_stmt_execute($stmtProject);
     mysqli_stmt_close($stmtProject);
 
-    // Update category di tabel uploads
     $updateUploadSql = "UPDATE uploads SET category = ? WHERE project_id = ?";
     $stmtUpload = mysqli_prepare($conn, $updateUploadSql);
     mysqli_stmt_bind_param($stmtUpload, "si", $category, $project_id);
@@ -36,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     mysqli_close($conn);
 
     if ($executeProject && $executeUpload) {
-        header("Location: ../pages/user/tracker.php?success=Status dan kategori berhasil diperbarui!");
+        header("Location: ../pages/user/tracker.php?success=Kategori berhasil diperbarui!");
         exit;
     } else {
         header("Location: ../pages/user/tracker.php?error=Gagal memperbarui data!");

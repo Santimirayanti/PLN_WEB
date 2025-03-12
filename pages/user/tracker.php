@@ -57,7 +57,6 @@ $result = mysqli_stmt_get_result($stmt);
             <tbody>
                 <?php
                 while ($row = mysqli_fetch_assoc($result)) :
-                    // Ambil gambar berdasarkan project_id
                     $upload_sql = "SELECT file_path FROM uploads WHERE project_id = ? LIMIT 1";
                     $upload_stmt = mysqli_prepare($conn, $upload_sql);
                     mysqli_stmt_bind_param($upload_stmt, "i", $row['id']);
@@ -126,7 +125,6 @@ $result = mysqli_stmt_get_result($stmt);
                         <!-- Gambar -->
                         <td class="p-4 text-center imageContainer">
                             <?php
-                            // Query untuk mengambil semua gambar berdasarkan project_id
                             $upload_sql = "SELECT id, file_path FROM uploads WHERE project_id = ?";
                             $upload_stmt = mysqli_prepare($conn, $upload_sql);
                             mysqli_stmt_bind_param($upload_stmt, "i", $row['id']);
@@ -140,27 +138,26 @@ $result = mysqli_stmt_get_result($stmt);
                                 <?php if (!empty($images)): ?>
                                     <?php foreach ($images as $image):
                                         $image_id = $image['id'];
-                                        $file_path = $image['file_path']; // URL yang disimpan di database
+                                        $file_path = $image['file_path'];
 
-                                        if (preg_match('/id=([a-zA-Z0-9_-]+)/', $file_path, $matches)): // Ekstrak Google Drive File ID
-                                            $google_drive_id = $matches[1];
-                                            $image_url = "https://cors.bridged.cc/https://lh3.googleusercontent.com/d/$google_drive_id";; // Gunakan direct download link
+                                        parse_str(parse_url($file_path, PHP_URL_QUERY), $query_params);
+                                        $google_drive_id = $query_params['id'] ?? '';
+                                        $image_url = "https://lh3.googleusercontent.com/d/$google_drive_id=w500";
+
                                     ?>
-                                            <div class="relative">
-                                                <img src="<?= $image_url ?>" class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition" onclick="openModal(this)">
-                                                <button onclick="deleteImage(<?= $image_id ?>, '<?= $file_path ?>')" class="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded-full">✕</button>
-                                            </div>
-                                        <?php else: ?>
-                                            <span class="text-gray-500">Gambar tidak ditemukan</span>
-                                        <?php endif; ?>
+                                        <div class="relative">
+                                            <img src="<?= htmlspecialchars($image_url) ?>"
+                                                class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition"
+                                                onclick="openModal(this)">
+                                            <button onclick="deleteImage(<?= $image_id ?>, '<?= htmlspecialchars($file_path) ?>')"
+                                                class="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded-full">✕
+                                            </button>
+                                        </div>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <span class="text-gray-500">Belum Upload</span>
                                 <?php endif; ?>
                             </div>
-
-
-
 
                             <!-- Form Upload Gambar -->
                             <form method="POST" action="../../config/upload.php" enctype="multipart/form-data" class="mt-4">
@@ -169,8 +166,6 @@ $result = mysqli_stmt_get_result($stmt);
                                 <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Upload</button>
                             </form>
                         </td>
-
-
 
                         <!-- Aksi -->
                         <td class="p-4 text-center">
@@ -258,14 +253,13 @@ $result = mysqli_stmt_get_result($stmt);
             select.addEventListener("change", function() {
                 let projectId = this.getAttribute("data-project-id");
 
-                // Cari form yang sesuai dengan project_id
                 let form = document.querySelector(
                     `form input[name="project_id"][value="${projectId}"]`)?.closest("form");
 
                 if (form) {
                     let hiddenInput = form.querySelector("input[name='status']");
                     if (hiddenInput) {
-                        hiddenInput.value = this.value; // Set nilai baru
+                        hiddenInput.value = this.value;
                     }
                 }
             });
@@ -285,7 +279,7 @@ $result = mysqli_stmt_get_result($stmt);
                 .then(data => {
                     if (data.success) {
                         alert("Gambar berhasil dihapus!");
-                        location.reload(); // Reload halaman setelah menghapus gambar
+                        location.reload();
                     } else {
                         alert("Gagal menghapus gambar: " + data.error);
                     }
@@ -298,12 +292,11 @@ $result = mysqli_stmt_get_result($stmt);
         var projectId = selectElement.getAttribute("data-project-id");
         var newStatus = selectElement.value;
 
-        // Kirim data dengan AJAX menggunakan FormData
         let formData = new FormData();
         formData.append("project_id", projectId);
         formData.append("status", newStatus);
 
-        fetch('../../config/ajukan.php', {
+        fetch('../../config/status.php', {
                 method: 'POST',
                 body: formData
             })
@@ -312,7 +305,6 @@ $result = mysqli_stmt_get_result($stmt);
                 if (data.success) {
                     alert(data.message);
 
-                    // Refresh halaman setelah 1 detik
                     setTimeout(() => {
                         location.reload();
                     }, 1000);

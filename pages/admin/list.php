@@ -11,8 +11,8 @@ if (!$user_id) {
 
 
 if ($_SESSION['role'] !== 'Admin') {
-  header("Location: ../user/home.php");
-  exit;
+    header("Location: ../user/home.php");
+    exit;
 }
 
 $user_id = (int) $_SESSION['id'];
@@ -82,18 +82,29 @@ $result = $conn->query($query);
                     </td>
                     <td class="p-4">
                         <?php
-                        $photos = explode(',', $row['photo_paths']);
+                        $photos = !empty($row['photo_paths']) ? explode(',', $row['photo_paths']) : [];
+                        $photos = array_filter(array_map('trim', $photos));
                         ?>
                         <div class="flex gap-2 imageContainer">
-                            <?php foreach ($photos as $photo): ?>
-                                <?php if (!empty($photo)): ?>
-                                    <img src="../../<?php echo htmlspecialchars($photo); ?>"
+                            <?php if (!empty($photos)): ?>
+                                <?php foreach ($photos as $file_path): ?>
+                                    <?php
+                                    preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $file_path, $matches);
+                                    $google_drive_id = $matches[1] ?? '';
+                                    $image_url = $google_drive_id ?
+                                        "https://drive.google.com/thumbnail?id=$google_drive_id&sz=w500" :
+                                        htmlspecialchars($file_path, ENT_QUOTES, 'UTF-8'); // Fallback ke URL asli
+                                    ?>
+                                    <img src="<?php echo $image_url; ?>"
                                         class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition"
                                         onclick="openModal(this)">
-                                <?php endif; ?>
-                            <?php endforeach; ?>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <span class="text-gray-500 text-sm">Tidak ada gambar</span>
+                            <?php endif; ?>
                         </div>
                     </td>
+
                     <td class="p-4 text-center align-middle">
                         <button class="approval-submit px-4 py-2 bg-green-500 text-white rounded"
                             data-project-id="<?php echo $row['id']; ?>">Kirim</button>
@@ -102,53 +113,52 @@ $result = $conn->query($query);
             <?php endwhile; ?>
         </tbody>
     </table>
-    
+
     <!-- Modal -->
     <div id="modal"
-            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center hidden">
-            <button onclick="prevImage()"
-                class="absolute left-4 text-white text-4xl font-bold">&larr;</button>
-            <img id="modalImg"
-                class="max-w-full max-h-full transition-transform duration-300">
-            <button onclick="nextImage()"
-                class="absolute right-4 text-white text-4xl font-bold">&rarr;</button>
-            <button onclick="closeModal()"
-                class="absolute top-4 right-4 text-white text-3xl font-bold">&times;</button>
-        </div>
+        class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center hidden">
+        <button onclick="prevImage()"
+            class="absolute left-4 text-white text-4xl font-bold">&larr;</button>
+        <img id="modalImg"
+            class="max-w-full max-h-full transition-transform duration-300">
+        <button onclick="nextImage()"
+            class="absolute right-4 text-white text-4xl font-bold">&rarr;</button>
+        <button onclick="closeModal()"
+            class="absolute top-4 right-4 text-white text-3xl font-bold">&times;</button>
+    </div>
 
-        <script>
-            let images = [];
-            let currentIndex = 0;
+    <script>
+        let images = [];
+        let currentIndex = 0;
 
-            function openModal(imgElement) {
-                let row = imgElement.closest("tr"); // Ambil baris tempat gambar berada
-                images = Array.from(row.querySelectorAll(".imageContainer img")).map(img => img.src);
-                currentIndex = images.indexOf(imgElement.src);
-                document.getElementById("modalImg").src = images[currentIndex];
-                document.getElementById("modal").classList.remove("hidden");
-            }
+        function openModal(imgElement) {
+            let row = imgElement.closest("tr");
+            images = Array.from(row.querySelectorAll(".imageContainer img")).map(img => img.src);
+            currentIndex = images.indexOf(imgElement.src);
+            document.getElementById("modalImg").src = images[currentIndex];
+            document.getElementById("modal").classList.remove("hidden");
+        }
 
-            function closeModal() {
-                document.getElementById("modal").classList.add("hidden");
-            }
+        function closeModal() {
+            document.getElementById("modal").classList.add("hidden");
+        }
 
-            function prevImage() {
-                currentIndex = (currentIndex - 1 + images.length) % images.length;
-                document.getElementById("modalImg").src = images[currentIndex];
-            }
+        function prevImage() {
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            document.getElementById("modalImg").src = images[currentIndex];
+        }
 
-            function nextImage() {
-                currentIndex = (currentIndex + 1) % images.length;
-                document.getElementById("modalImg").src = images[currentIndex];
-            }
+        function nextImage() {
+            currentIndex = (currentIndex + 1) % images.length;
+            document.getElementById("modalImg").src = images[currentIndex];
+        }
 
-            document.addEventListener("keydown", function(event) {
-                if (event.key === "ArrowLeft") prevImage();
-                if (event.key === "ArrowRight") nextImage();
-                if (event.key === "Escape") closeModal();
-            });
-        </script>
-    <!-- AJAX untuk Update Approval -->
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "ArrowLeft") prevImage();
+            if (event.key === "ArrowRight") nextImage();
+            if (event.key === "Escape") closeModal();
+        });
+    </script>
     <script>
         document.querySelectorAll('.approval-submit').forEach(button => {
             button.addEventListener('click', async function() {

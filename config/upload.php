@@ -14,24 +14,20 @@ if (!$user_id) {
     exit;
 }
 
-// Fungsi untuk mengunggah gambar ke Google Drive dan mengatur izin publik
 function uploadToGoogleDrive($filePath, $fileName) {
     $client = new Client();
-    $client->setAuthConfig('../cool-tooling-453512-a6-8f648e07039c.json'); // Ganti dengan lokasi file kredensial JSON Anda
+    $client->setAuthConfig('../cool-tooling-453512-a6-8f648e07039c.json');
     $client->addScope(Drive::DRIVE_FILE);
 
     $service = new Drive($client);
 
-    // Metadata file
     $fileMetadata = new Drive\DriveFile([
         'name' => $fileName,
-        'parents' => ['1KWIc79jxvXcphJOoJQ7rUgctgcyAFHHM'] // Ganti dengan ID folder Google Drive Anda
+        'parents' => ['1KWIc79jxvXcphJOoJQ7rUgctgcyAFHHM']
     ]);
 
-    // Baca konten file
     $content = file_get_contents($filePath);
 
-    // Upload file ke Google Drive
     $file = $service->files->create($fileMetadata, [
         'data' => $content,
         'mimeType' => mime_content_type($filePath),
@@ -39,11 +35,9 @@ function uploadToGoogleDrive($filePath, $fileName) {
         'fields' => 'id'
     ]);
 
-    // Ambil ID file
     $fileId = $file->id ?? false;
     
     if ($fileId) {
-        // Set permission agar file bisa diakses secara publik
         $permission = new Drive\Permission();
         $permission->setType('anyone');
         $permission->setRole('reader');
@@ -56,29 +50,25 @@ function uploadToGoogleDrive($filePath, $fileName) {
     return false;
 }
 
-// Pastikan request adalah POST dan ada file yang diunggah
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_FILES['image'])) {
     $project_id = $_POST['project_id'] ?? null;
     if (!$project_id) {
         die("ID proyek tidak ditemukan!");
     }
 
-    $fileName = uniqid() . "_" . basename($_FILES["image"]["name"]); // Buat nama unik
+    $fileName = uniqid() . "_" . basename($_FILES["image"]["name"]);
     $filePath = $_FILES["image"]["tmp_name"];
     $fileType = strtolower(pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION));
 
-    // Validasi jenis file
     $allowedTypes = ['jpg', 'jpeg', 'png'];
     if (!in_array($fileType, $allowedTypes)) {
         die("Format file tidak diizinkan!");
     }
 
-    // Upload ke Google Drive
     $fileId = uploadToGoogleDrive($filePath, $fileName);
     if ($fileId) {
-        $googleDrivePath = "https://drive.google.com/uc?id=" . $fileId; // URL yang dapat diakses langsung
+        $googleDrivePath = "https://drive.google.com/uc?id=" . $fileId;
 
-        // Simpan path ke database
         $insertSql = "INSERT INTO uploads (project_id, file_path, uploaded_at) VALUES (?, ?, NOW())";
         $insertStmt = mysqli_prepare($conn, $insertSql);
         mysqli_stmt_bind_param($insertStmt, "is", $project_id, $googleDrivePath);

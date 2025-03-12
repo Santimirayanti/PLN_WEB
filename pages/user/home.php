@@ -15,7 +15,6 @@ if ($_SESSION['role'] !== 'User') {
 
 $user_id = (int) $_SESSION['id'];
 
-// Ambil data proyek dari database
 $sql = "SELECT status, approval FROM projects WHERE user_id = ?";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, "i", $user_id);

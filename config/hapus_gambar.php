@@ -1,6 +1,13 @@
 <?php
 require 'database.php';
+require '../vendor/autoload.php';
+
+use Google\Client;
+use Google\Service\Drive;
+
 session_start();
+
+header('Content-Type: application/json');
 
 $user_id = $_SESSION['id'] ?? null;
 if (!$user_id) {
@@ -8,35 +15,46 @@ if (!$user_id) {
     exit;
 }
 
-header('Content-Type: application/json');
+function deleteFromGoogleDrive($fileId) {
+    $client = new Client();
+    $client->setAuthConfig('../cool-tooling-453512-a6-8f648e07039c.json'); // Ubah dengan lokasi file JSON kredensial Anda
+    $client->addScope(Drive::DRIVE_FILE);
 
-$user_id = $_SESSION['id'] ?? null;
-if (!$user_id) {
-    echo json_encode(["success" => false, "error" => "Unauthorized"]);
-    exit;
+    $service = new Drive($client);
+
+    try {
+        $service->files->delete($fileId);
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['upload_id']) && isset($_POST['file_path'])) {
     $upload_id = $_POST['upload_id'];
-    $filePath = '../' . $_POST['file_path']; // Path relatif dari root proyek
+    $filePath = $_POST['file_path']; 
 
-    // Cek apakah file ada
-    if (file_exists($filePath)) {
-        unlink($filePath); // Hapus file dari server
-    }
+    if (preg_match('/id=([a-zA-Z0-9_-]+)/', $filePath, $matches)) {
+        $google_drive_id = $matches[1];
 
-    // Hapus entri dari database
-    $deleteSql = "DELETE FROM uploads WHERE id = ?";
-    $deleteStmt = mysqli_prepare($conn, $deleteSql);
-    mysqli_stmt_bind_param($deleteStmt, "i", $upload_id);
+        if (deleteFromGoogleDrive($google_drive_id)) {
+            $deleteSql = "DELETE FROM uploads WHERE id = ?";
+            $deleteStmt = mysqli_prepare($conn, $deleteSql);
+            mysqli_stmt_bind_param($deleteStmt, "i", $upload_id);
 
-    if (mysqli_stmt_execute($deleteStmt)) {
-        echo json_encode(["success" => true]);
+            if (mysqli_stmt_execute($deleteStmt)) {
+                echo json_encode(["success" => true]);
+            } else {
+                echo json_encode(["success" => false, "error" => "Gagal menghapus dari database"]);
+            }
+
+            mysqli_stmt_close($deleteStmt);
+        } else {
+            echo json_encode(["success" => false, "error" => "Gagal menghapus dari Google Drive"]);
+        }
     } else {
-        echo json_encode(["success" => false, "error" => "Gagal menghapus dari database"]);
+        echo json_encode(["success" => false, "error" => "File ID tidak valid"]);
     }
-
-    mysqli_stmt_close($deleteStmt);
 } else {
     echo json_encode(["success" => false, "error" => "Invalid request"]);
 }
