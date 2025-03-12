@@ -15,7 +15,10 @@ if ($_SESSION['role'] !== 'Admin') {
 $user_id = (int) $_SESSION['id'];
 
 
-$query = "SELECT id, name, date, status, approval FROM projects";
+$query = "SELECT projects.id AS project_id, projects.name, projects.date, 
+                 projects.status, projects.approval, users.username 
+          FROM projects
+          JOIN users ON projects.user_id = users.id";
 $result = mysqli_query($conn, $query);
 
 
@@ -87,7 +90,7 @@ $projects = mysqli_fetch_all($result, MYSQLI_ASSOC);
             <?php foreach ($projects as $project): ?>
               <tr data-status="<?php echo htmlspecialchars($project['approval']); ?>">
                 <td class="bg-white border p-3"><?php echo htmlspecialchars($project['name']); ?></td>
-                <td class="bg-white border p-3"><?php echo htmlspecialchars($project['date']); ?></td>
+                <td class="bg-white border p-3"><?php echo htmlspecialchars($project['username']); ?></td>
 
                 <td class="bg-white border p-3 text-center 
       <?php

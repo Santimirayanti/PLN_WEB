@@ -125,14 +125,35 @@ $result = mysqli_stmt_get_result($stmt);
 
                     <!-- Gambar -->
                     <td class="p-4 text-center imageContainer">
-                        <?php if (!empty($image_path) && file_exists('../../' . $image_path)): ?>
-                        <img src="../../<?php echo htmlspecialchars($image_path); ?>"
-                            class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition"
-                            onclick="openModal(this)">
-                        <?php else: ?>
-                        <span class="text-gray-500">Belum Upload</span>
-                        <?php endif; ?>
-                    </td>
+    <?php
+    // Query untuk mengambil semua gambar berdasarkan project_id
+    $upload_sql = "SELECT file_path FROM uploads WHERE project_id = ?";
+    $upload_stmt = mysqli_prepare($conn, $upload_sql);
+    mysqli_stmt_bind_param($upload_stmt, "i", $row['id']);
+    mysqli_stmt_execute($upload_stmt);
+    $upload_result = mysqli_stmt_get_result($upload_stmt);
+    $images = mysqli_fetch_all($upload_result, MYSQLI_ASSOC);
+    mysqli_stmt_close($upload_stmt);
+
+    // Cek apakah ada gambar yang ditemukan
+    if (!empty($images)): ?>
+        <div class="flex flex-wrap justify-center gap-2">
+            <?php foreach ($images as $image): 
+                $image_path = "../../" . $image['file_path']; ?>
+                <?php if (file_exists($image_path)): ?>
+                    <img src="<?= htmlspecialchars($image_path); ?>"
+                        class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition"
+                        onclick="openModal(this)">
+                <?php else: ?>
+                    <span class="text-gray-500">Gambar tidak ditemukan</span>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <span class="text-gray-500">Belum Upload</span>
+    <?php endif; ?>
+</td>
+
 
                     <!-- Aksi -->
                     <td class="p-4 text-center">

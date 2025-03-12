@@ -8,7 +8,7 @@ if (!$user_id) {
     exit;
 }
 
-// Pastikan ada ID yang dikirim
+// Pastikan ada ID proyek yang dikirim
 if (!isset($_GET['id'])) {
     echo "ID proyek tidak ditemukan!";
     exit;
@@ -16,28 +16,28 @@ if (!isset($_GET['id'])) {
 
 $project_id = $_GET['id'];
 
-// Cek apakah ada file yang tersimpan untuk project_id ini
+// Ambil semua file_path yang terkait dengan project_id
 $checkSql = "SELECT file_path FROM uploads WHERE project_id = ?";
 $checkStmt = mysqli_prepare($conn, $checkSql);
 mysqli_stmt_bind_param($checkStmt, "i", $project_id);
 mysqli_stmt_execute($checkStmt);
 $checkResult = mysqli_stmt_get_result($checkStmt);
-$fileData = mysqli_fetch_assoc($checkResult);
-mysqli_stmt_close($checkStmt);
 
-if ($fileData) {
+// Loop untuk menghapus semua file gambar dari server
+while ($fileData = mysqli_fetch_assoc($checkResult)) {
     $filePath = '../' . $fileData['file_path']; // Path file yang akan dihapus
     if (file_exists($filePath)) {
-        unlink($filePath); // Hapus file dari server
+        unlink($filePath); // Hapus file dari folder uploads
     }
-
-    // Hapus entri dari tabel uploads
-    $deleteUploadsSql = "DELETE FROM uploads WHERE project_id = ?";
-    $deleteUploadsStmt = mysqli_prepare($conn, $deleteUploadsSql);
-    mysqli_stmt_bind_param($deleteUploadsStmt, "i", $project_id);
-    mysqli_stmt_execute($deleteUploadsStmt);
-    mysqli_stmt_close($deleteUploadsStmt);
 }
+mysqli_stmt_close($checkStmt);
+
+// Hapus semua entri dari tabel uploads terkait project_id
+$deleteUploadsSql = "DELETE FROM uploads WHERE project_id = ?";
+$deleteUploadsStmt = mysqli_prepare($conn, $deleteUploadsSql);
+mysqli_stmt_bind_param($deleteUploadsStmt, "i", $project_id);
+mysqli_stmt_execute($deleteUploadsStmt);
+mysqli_stmt_close($deleteUploadsStmt);
 
 // Hapus entri dari tabel projects
 $deleteProjectsSql = "DELETE FROM projects WHERE id = ?";

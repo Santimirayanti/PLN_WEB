@@ -8,8 +8,6 @@ if (!$user_id) {
     exit;
 }
 
-echo "Status: " . ($_POST['status'] ?? 'NULL') . "<br>";
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $project_id = $_POST['project_id'] ?? null;
     $category = $_POST['category'] ?? null;
@@ -27,30 +25,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         mkdir($uploadDir, 0777, true);
     }
 
-    // Cek apakah ada gambar lama di database
-    $checkSql = "SELECT file_path FROM uploads WHERE project_id = ?";
-    $checkStmt = mysqli_prepare($conn, $checkSql);
-    mysqli_stmt_bind_param($checkStmt, "i", $project_id);
-    mysqli_stmt_execute($checkStmt);
-    $checkResult = mysqli_stmt_get_result($checkStmt);
-    $existingImage = mysqli_fetch_assoc($checkResult)['file_path'] ?? null;
-    mysqli_stmt_close($checkStmt);
-
-    // Jika ada gambar lama, hapus dari server dan database
-    if ($existingImage) {
-        $oldFilePath = '../' . $existingImage;
-        if (file_exists($oldFilePath)) {
-            unlink($oldFilePath); // Hapus file lama dari server
-        }
-
-        // Hapus entry lama dari database
-        $deleteSql = "DELETE FROM uploads WHERE project_id = ?";
-        $deleteStmt = mysqli_prepare($conn, $deleteSql);
-        mysqli_stmt_bind_param($deleteStmt, "i", $project_id);
-        mysqli_stmt_execute($deleteStmt);
-        mysqli_stmt_close($deleteStmt);
-    }
-
     // Simpan file baru dengan nama unik
     $fileExtension = pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION);
     $fileName = uniqid() . "." . $fileExtension;
@@ -58,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $dbFilePath = "uploads/" . $fileName;
 
     if (move_uploaded_file($_FILES["image"]["tmp_name"], $filePath)) {
-        // Simpan informasi file baru ke database
+        // Simpan informasi file baru ke database TANPA menghapus yang lama
         $sql = "INSERT INTO uploads (project_id, file_path, category) VALUES (?, ?, ?)";
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, "iss", $project_id, $dbFilePath, $category);
