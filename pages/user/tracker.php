@@ -8,7 +8,7 @@ if (!$user_id) {
     exit;
 }
 
-if ($_SESSION['role'] !== 'Admin') {
+if ($_SESSION['role'] !== 'User') {
     header("Location: ../admin/home.php");
     exit;
   }
