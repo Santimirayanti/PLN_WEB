@@ -127,66 +127,58 @@ $result = mysqli_stmt_get_result($stmt);
                         <td class="p-4 text-center imageContainer">
                             <?php
                             // Query untuk mengambil semua gambar berdasarkan project_id
-                            $upload_sql = "SELECT file_path FROM uploads WHERE project_id = ?";
+                            $upload_sql = "SELECT id, file_path FROM uploads WHERE project_id = ?";
                             $upload_stmt = mysqli_prepare($conn, $upload_sql);
                             mysqli_stmt_bind_param($upload_stmt, "i", $row['id']);
                             mysqli_stmt_execute($upload_stmt);
                             $upload_result = mysqli_stmt_get_result($upload_stmt);
                             $images = mysqli_fetch_all($upload_result, MYSQLI_ASSOC);
                             mysqli_stmt_close($upload_stmt);
+                            ?>
 
-                            // Cek apakah ada gambar yang ditemukan
-                            if (!empty($images)): ?>
-                                <div class="flex flex-wrap justify-center gap-2">
+                            <div class="flex flex-wrap justify-center gap-2">
+                                <?php if (!empty($images)): ?>
                                     <?php foreach ($images as $image):
+                                        $image_id = $image['id'];
                                         $image_path = "../../" . $image['file_path']; ?>
                                         <?php if (file_exists($image_path)): ?>
-                                            <img src="<?= htmlspecialchars($image_path); ?>"
-                                                class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition"
-                                                onclick="openModal(this)">
+                                            <div class="relative">
+                                                <img src="<?= htmlspecialchars($image_path); ?>"
+                                                    class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition"
+                                                    onclick="openModal(this)">
+                                                <button onclick="deleteImage(<?= $image_id ?>, '<?= $image['file_path'] ?>')"
+                                                    class="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded-full">✕</button>
+                                            </div>
                                         <?php else: ?>
                                             <span class="text-gray-500">Gambar tidak ditemukan</span>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
-                                </div>
-                            <?php else: ?>
-                                <span class="text-gray-500">Belum Upload</span>
-                            <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="text-gray-500">Belum Upload</span>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Form Upload Gambar -->
+                            <form method="POST" action="../../config/upload.php" enctype="multipart/form-data" class="mt-4">
+                                <input type="hidden" name="project_id" value="<?= $row['id'] ?>">
+                                <input type="file" name="image" accept=".jpg,.jpeg,.png" required class="p-2 border rounded">
+                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Upload</button>
+                            </form>
                         </td>
-    // Cek apakah ada gambar yang ditemukan
-    if (!empty($images)): ?>
-        <div class="flex flex-wrap justify-center gap-2">
-            <?php foreach ($images as $image): 
-                $image_path = "../../" . $image['file_path']; ?>
-                <?php if (file_exists($image_path)): ?>
-                    <img src="<?= htmlspecialchars($image_path); ?>"
-                        class="w-20 h-20 object-cover cursor-pointer border rounded-md hover:scale-105 transition"
-                        onclick="openModal(this)">
-                <?php else: ?>
-                    <span class="text-gray-500">Gambar tidak ditemukan</span>
-                <?php endif; ?>
-            <?php endforeach; ?>
-        </div>
-        <input type="file" name="image" accept=".jpg,.jpeg,.png" required
-                                    class="p-2 mt-4 border rounded">
-        <button type="upload" class="px-4 py-2 bg-blue-500 text-white rounded">Upload</button>
-    <?php else: ?>
-        <span class="text-gray-500">Belum Upload</span>
-    <?php endif; ?>
-</td>
+
 
 
                         <!-- Aksi -->
                         <td class="p-4 text-center">
                             <div class="flex items-center gap-2 justify-center">
                                 <?php if ($row['approval'] == 'Belum Diajukan' || $row['approval'] == 'Butuh Peninjauan') : ?>
-                                    <form method="POST" action="../../config/kirim.php" enctype="multipart/form-data">
+                                    <form method="POST" action="../../config/ajukan.php" enctype="multipart/form-data">
                                         <input type="hidden" name="project_id" value="<?= $row['id'] ?>">
                                         <input type="hidden" name="status" value="<?= htmlspecialchars($row['status']) ?>">
                                         <!-- Input Hidden -->
 
                                         <select name="category" required class="p-2 border rounded">
-                                            <option value="Upload foto pelaksanaan">Upload foto pelaksanaan</option>
+                                            <option value="Data Belum Di isi">Upload foto pelaksanaan</option>
                                             <optgroup label="Foto Kegiatan">
                                                 <option value="Pengecekan Dokumen">Pengecekan Dokumen DP3, JSA, WP</option>
                                                 <option value="Pantauan hotspot">Pantauan hotspot sebelum manuver</option>
@@ -198,10 +190,6 @@ $result = mysqli_stmt_get_result($stmt);
                                                 <option value="Safety briefing">Safety briefing sebelum pemeliharaan</option>
                                             </optgroup>
                                         </select>
-
-                                        <input type="file" name="image" accept=".jpg,.jpeg,.png" required
-                                            class="p-2 border rounded">
-
                                         <button type="submit" class="px-4 py-1 bg-blue-500 text-white rounded">Kirim</button>
                                     </form>
 
@@ -279,6 +267,57 @@ $result = mysqli_stmt_get_result($stmt);
             });
         });
     });
+
+    function deleteImage(imageId, filePath) {
+        if (confirm("Apakah Anda yakin ingin menghapus gambar ini?")) {
+            fetch('../../config/hapus_gambar.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `upload_id=${imageId}&file_path=${filePath}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Gambar berhasil dihapus!");
+                        location.reload(); // Reload halaman setelah menghapus gambar
+                    } else {
+                        alert("Gagal menghapus gambar: " + data.error);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+    }
+
+    function updateStatus(selectElement) {
+        var projectId = selectElement.getAttribute("data-project-id");
+        var newStatus = selectElement.value;
+
+        // Kirim data dengan AJAX menggunakan FormData
+        let formData = new FormData();
+        formData.append("project_id", projectId);
+        formData.append("status", newStatus);
+
+        fetch('../../config/ajukan.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+
+                    // Refresh halaman setelah 1 detik
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    alert('Gagal memperbarui status: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
 </script>
 
 

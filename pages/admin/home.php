@@ -2,9 +2,10 @@
 session_start();
 require '../../config/database.php';
 
-if (!isset($_SESSION['id'])) {
-  header("Location: ../../auth/login.php");
-  exit;
+$user_id = $_SESSION['id'] ?? null;
+if (!$user_id) {
+    header("Location: ../../index.php");
+    exit;
 }
 
 if ($_SESSION['role'] !== 'Admin') {

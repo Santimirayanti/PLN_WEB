@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($stmt) {
             mysqli_stmt_bind_param($stmt, "sss", $username, $email, $password_hash);
             if (mysqli_stmt_execute($stmt)) {
-                $messages = "<div class='bg-green-500 text-white p-2 rounded mt-2'>Akun berhasil dibuat. Silakan <a href='login.php' class='underline'>login</a>.</div>";
+                $messages = "<div class='bg-green-500 text-white p-2 rounded mt-2'>Akun berhasil dibuat. Silakan <a href='../index.php' class='underline'>login</a>.</div>";
             } else {
                 $messages = "<div class='bg-red-500 text-white p-2 rounded mt-2'>Terjadi kesalahan saat registrasi.</div>";
             }
