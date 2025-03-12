@@ -70,9 +70,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Halaman Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+      body {
+        background: linear-gradient(to right, #1e3a8a, #3b82f6);
+        overflow: hidden;
+      }
+      .particles {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: -1;
+      }
+    </style>
 </head>
 
 <body class="bg-gray-100 flex justify-center items-center h-screen">
+<canvas class="particles"></canvas>
   <div class="bg-white p-8 rounded-lg shadow-lg text-center w-96">
     <img src="assets\img\logo_pln.png" alt="Logo PLN" class="mx-auto w-24 mb-4" />
     <h2 class="text-2xl font-bold text-blue-600">Login</h2>
@@ -92,6 +108,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     <p class="mt-4 text-gray-600">Belum punya akun?</p>
     <a href="auth/register.php" class="text-blue-500 underline cursor-pointer mt-2">Buat Akun</a>
   </div>
+
+  <script>
+      const canvas = document.querySelector(".particles");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      let particlesArray = [];
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 3 + 1;
+          this.speedX = Math.random() * 1 - 0.5;
+          this.speedY = Math.random() * 1 - 0.5;
+        }
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+          if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+        }
+        draw() {
+          ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function init() {
+        particlesArray = [];
+        for (let i = 0; i < 100; i++) {
+          particlesArray.push(new Particle());
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particlesArray.forEach((particle) => {
+          particle.update();
+          particle.draw();
+        });
+        requestAnimationFrame(animate);
+      }
+
+      init();
+      animate();
+    </script>
 </body>
 
 </html>
